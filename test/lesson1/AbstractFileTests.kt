@@ -9,4 +9,14 @@ abstract class AbstractFileTests {
         val content = file.readLines().joinToString("\n")
         assertEquals(expectedContent.trim(), content.trim())
     }
+
+    protected fun assertFileEquals(expectedName: String, actualName: String) {
+        File(expectedName).useLines { expectedLines ->
+            File(actualName).useLines { actualLines ->
+                expectedLines.zip(actualLines).forEach { (expectedLine, actualLine) ->
+                    assertEquals(expectedLine, actualLine)
+                }
+            }
+        }
+    }
 }

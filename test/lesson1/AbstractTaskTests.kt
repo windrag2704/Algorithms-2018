@@ -103,9 +103,7 @@ abstract class AbstractTaskTests : AbstractFileTests() {
             try {
                 generateTemperatures(size)
                 sortTemperatures("temp_unsorted.txt", "temp_sorted_actual.txt")
-                assertFileContent("temp_sorted_actual.txt",
-                        File("temp_sorted_expected.txt").readLines().joinToString(separator = "\n")
-                )
+                assertFileEquals("temp_sorted_expected.txt", "temp_sorted_actual.txt")
             } finally {
                 File("temp_unsorted.txt").delete()
                 File("temp_sorted_expected.txt").delete()
