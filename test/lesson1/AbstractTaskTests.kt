@@ -99,6 +99,13 @@ abstract class AbstractTaskTests : AbstractFileTests() {
             File("temp.txt").delete()
         }
 
+        try {
+            sortTemperatures("input/in_empty.txt", "temp.txt")
+            assertFileContent("temp.txt", "")
+        } finally {
+            File("temp.txt").delete()
+        }
+
         fun testGeneratedTemperatures(size: Int) {
             try {
                 generateTemperatures(size)
@@ -150,6 +157,8 @@ abstract class AbstractTaskTests : AbstractFileTests() {
         } finally {
             File("temp.txt").delete()
         }
+        sortSequence("input/seq_in_large.txt", "temp.txt")
+        assertFile("temp.txt", "output/seq_large.txt")
 
         fun BufferedWriter.writeNumbers(numbers: List<Int>) {
             for (n in numbers) {

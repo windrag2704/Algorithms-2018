@@ -2,6 +2,9 @@ package lesson1;
 
 import kotlin.NotImplementedError;
 
+import java.io.*;
+import java.util.*;
+
 @SuppressWarnings("unused")
 public class JavaTasks {
     /**
@@ -96,8 +99,24 @@ public class JavaTasks {
      * 99.5
      * 121.3
      */
-    static public void sortTemperatures(String inputName, String outputName) {
-        throw new NotImplementedError();
+    static public void sortTemperatures(String inputName, String outputName) throws IOException {
+        TreeMap<Double,Integer> temps = new TreeMap<>();
+        BufferedReader in = new BufferedReader(new FileReader(inputName));
+        String temp;
+        Double value;
+        while ((temp = in.readLine()) != null) {
+            value = Double.parseDouble(temp);
+            temps.merge(value,1, (a,b) -> a+b);
+        }
+        PrintWriter out = new PrintWriter(new File(outputName));
+        for (Map.Entry<Double,Integer> entry : temps.entrySet()) {
+            for (int i = 0 ; i < entry.getValue(); i++) {
+                out.println(entry.getKey());
+            }
+        }
+        out.close();
+        // T = O(N*logN)
+        // R = O(N)
     }
 
     /**
@@ -129,8 +148,34 @@ public class JavaTasks {
      * 2
      * 2
      */
-    static public void sortSequence(String inputName, String outputName) {
-        throw new NotImplementedError();
+    static public void sortSequence(String inputName, String outputName) throws Exception {
+        LinkedList<Integer> numbers = new LinkedList<>();
+        BufferedReader in = new BufferedReader(new FileReader(inputName));
+        TreeMap<Integer,Integer> count = new TreeMap<>();
+        String num;
+        while ((num = in.readLine()) != null) {
+            Integer temp = Integer.parseInt(num);
+            count.merge(temp,1,(a,b) -> a + b);
+            numbers.add(temp);
+        }
+        int max = count.firstEntry().getValue();
+        int maxCountNumber = count.firstKey();
+        for (Map.Entry<Integer,Integer> entry: count.entrySet()) {
+            if (max < entry.getValue()) {
+                max = entry.getValue();
+                maxCountNumber = entry.getKey();
+            }
+        }
+        PrintWriter out = new PrintWriter(new File(outputName));
+        for (Integer temp: numbers) {
+            if (temp != maxCountNumber)out.println(temp);
+        }
+        for (int i = 0; i < max; i++) {
+            out.println(maxCountNumber);
+        }
+        out.close();
+        // T = O(N*logN)
+        // R = O(N)
     }
 
     /**

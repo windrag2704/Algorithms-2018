@@ -1,6 +1,8 @@
 package lesson2
 
 import org.junit.jupiter.api.Tag
+import java.io.FileWriter
+import java.io.PrintWriter
 import kotlin.test.Test
 
 class AlgorithmsTestsJava : AbstractAlgorithmsTests() {
