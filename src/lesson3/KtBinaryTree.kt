@@ -178,18 +178,14 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
          */
         override fun remove() {
             if (current == null) return
-            var prev: Node<T>? = firstElement()
+            var prev: Node<T>? = null
             var temp = root
-            if (prev!!.value == current!!.value) {
-                prev = null
-            } else {
-                while (temp != null) {
-                    if (temp.value < current!!.value) {
-                        prev = temp
-                        temp = temp.right
-                    } else {
-                        temp = temp.left
-                    }
+            while (temp != null) {
+                if (temp.value < current!!.value) {
+                    prev = temp
+                    temp = temp.right
+                } else {
+                    temp = temp.left
                 }
             }
             remove(current?.value)
