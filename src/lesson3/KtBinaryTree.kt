@@ -63,14 +63,20 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
         }
         var removed: Node<T>
         var removedDirection: Int
-        removed =
-                (if (element.compareTo(parent.value) > 0) {
-                    removedDirection = 1
-                    parent.right
-                } else {
-                    removedDirection = -1
-                    parent.left
-                }) ?: return false
+        removed = (when {
+            element == parent.value -> {
+                removedDirection = 0
+                parent
+            }
+            element > parent.value -> {
+                removedDirection = 1
+                parent.right
+            }
+            else -> {
+                removedDirection = -1
+                parent.left
+            }
+        }) ?: return false
         if (root!!.value == element) {
             removedDirection = 0
             removed = root!!
@@ -85,6 +91,7 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
                 parent.left
             }) ?: return false
         }
+        println(removed.value)
         if (removed.right != null && removed.left != null) {
             var parentSwap = removed
             var swap = removed.right
