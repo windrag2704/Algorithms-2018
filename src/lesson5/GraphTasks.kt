@@ -31,6 +31,7 @@ import java.util.*
  * Справка: Эйлеров цикл -- это цикл, проходящий через все рёбра
  * связного графа ровно по одному разу
  */
+
 fun Graph.findEulerLoop(): List<Graph.Edge> {
     val result = mutableListOf<Graph.Edge>()
     var n = 0
