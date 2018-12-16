@@ -4,12 +4,31 @@ import java.util.SortedSet
 import kotlin.NoSuchElementException
 
 // Attention: comparable supported but comparator is not
-class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSortedSet<T> {
+class KtBinaryTree<T : Comparable<T>>() : AbstractMutableSet<T>(), CheckableSortedSet<T> {
 
     private var root: Node<T>? = null
 
+    private var begin: T? = null
+
+    private var end: T? = null
+
+    private constructor(root: Node<T>?, begin: T?, end: T?) : this() {
+        this.begin = begin
+        this.end = end
+        this.root = root
+    }
+
     override var size = 0
         private set
+        get() {
+            val it = iterator()
+            var ret = 0
+            while (it.hasNext()) {
+                it.next()
+                ret++
+            }
+            return ret
+        }
 
     private class Node<T>(val value: T) {
 
@@ -18,26 +37,36 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
         var right: Node<T>? = null
     }
 
+    private fun checkBounds(element: T): Boolean =
+            when {
+                (begin == null || begin!! <= element) && (end == null || end!! > element) -> true
+                else -> false
+            }
+
     override fun add(element: T): Boolean {
-        val closest = find(element)
-        val comparison = if (closest == null) -1 else element.compareTo(closest.value)
-        if (comparison == 0) {
+        if (checkBounds(element)) {
+            val closest = find(element)
+            val comparison = if (closest == null) -1 else element.compareTo(closest.value)
+            if (comparison == 0) {
+                return false
+            }
+            val newNode = Node(element)
+            when {
+                closest == null -> root = newNode
+                comparison < 0 -> {
+                    assert(closest.left == null)
+                    closest.left = newNode
+                }
+                else -> {
+                    assert(closest.right == null)
+                    closest.right = newNode
+                }
+            }
+            size++
+            return true
+        } else {
             return false
         }
-        val newNode = Node(element)
-        when {
-            closest == null -> root = newNode
-            comparison < 0 -> {
-                assert(closest.left == null)
-                closest.left = newNode
-            }
-            else -> {
-                assert(closest.right == null)
-                closest.right = newNode
-            }
-        }
-        size++
-        return true
     }
 
     override fun checkInvariant(): Boolean =
@@ -55,84 +84,82 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
      * Средняя
      */
     override fun remove(element: T): Boolean {
-        var parent: Node<T>
-        if (root == null) {
-            return false
-        } else {
-            parent = root!!
-        }
-        var removed: Node<T>
-        var removedDirection: Int
-        removed = (when {
-            element == parent.value -> {
-                removedDirection = 0
-                parent
-            }
-            element > parent.value -> {
-                removedDirection = 1
-                parent.right
-            }
-            else -> {
-                removedDirection = -1
-                parent.left
-            }
-        }) ?: return false
-        if (root!!.value == element) {
-            removedDirection = 0
-            removed = root!!
-        }
-        while (removed.value != element) {
-            parent = removed
-            removed = (if (element.compareTo(parent.value) > 0) {
-                removedDirection = 1
-                parent.right
-            } else {
-                removedDirection = -1
-                parent.left
+        if (checkBounds(element)) {
+            var parent: Node<T> = root ?: return false
+            var removed: Node<T>
+            var removedDirection: Int
+            removed = (when {
+                element == parent.value -> {
+                    removedDirection = 0
+                    parent
+                }
+                element > parent.value -> {
+                    removedDirection = 1
+                    parent.right
+                }
+                else -> {
+                    removedDirection = -1
+                    parent.left
+                }
             }) ?: return false
-        }
-        println(removed.value)
-        if (removed.right != null && removed.left != null) {
-            var parentSwap = removed
-            var swap = removed.right
-            while (swap!!.left != null) {
-                parentSwap = swap
-                swap = swap.left
+            while (removed.value != element) {
+                parent = removed
+                removed = (if (element > parent.value) {
+                    removedDirection = 1
+                    parent.right
+                } else {
+                    removedDirection = -1
+                    parent.left
+                }) ?: return false
             }
-            when (removedDirection) {
-                1 -> parent.right = swap
-                0 -> root = swap
-                else -> parent.left = swap
-            }
-            if (parentSwap == removed) {
-                swap.left = removed.left
+            if (removed.right != null && removed.left != null) {
+                var parentSwap = removed
+                var swap = removed.right
+                while (swap!!.left != null) {
+                    parentSwap = swap
+                    swap = swap.left
+                }
+                when (removedDirection) {
+                    1 -> parent.right = swap
+                    0 -> root = swap
+                    else -> parent.left = swap
+                }
+                if (parentSwap == removed) {
+                    swap.left = removed.left
+                } else {
+                    parentSwap.left = swap.right
+                    swap.right = removed.right
+                    swap.left = removed.left
+                }
+            } else if (removed.right != null) {
+                when (removedDirection) {
+                    1 -> parent.right = removed.right
+                    0 -> root = removed.right
+                    else -> parent.left = removed.right
+                }
             } else {
-                parentSwap.left = swap.right
-                swap.right = removed.right
-                swap.left = removed.left
+                when (removedDirection) {
+                    1 -> parent.right = removed.left
+                    0 -> root = removed.left
+                    else -> parent.left = removed.left
+                }
             }
-        } else if (removed.right != null) {
-            when (removedDirection) {
-                1 -> parent.right = removed.right
-                0 -> root = removed.right
-                else -> parent.left = removed.right
-            }
+            size--
+            return true
         } else {
-            when (removedDirection) {
-                1 -> parent.right = removed.left
-                0 -> root = removed.left
-                else -> parent.left = removed.left
-            }
+            return false
         }
-        size--
-        return true
         //R = O(1)
         //T = O(height)
     }
 
     override operator fun contains(element: T): Boolean {
-        val closest = find(element)
-        return closest != null && element.compareTo(closest.value) == 0
+        return if (checkBounds(element)) {
+            val closest = find(element)
+            closest != null && element.compareTo(closest.value) == 0
+        } else {
+            false
+        }
     }
 
     private fun find(value: T): Node<T>? =
@@ -156,8 +183,11 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
          * Средняя
          */
         private fun findNext(): Node<T>? {
-            if (current == null) return firstElement()
             var next: Node<T>? = null
+            if (current == null) {
+                next = firstElement()
+                if (begin == null || next.value >= begin!!) return next else current = next
+            }
             var temp = root
             while (temp != null) {
                 if (temp.value > current!!.value) {
@@ -167,6 +197,8 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
                     temp = temp.right
                 }
             }
+            if (next != null && end != null && next.value >= end!! ||
+                    (next != null &&begin != null && next.value < begin!!)) next = null
             return next
             //R = O(1)
             //T = O(height)
@@ -195,6 +227,7 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
                     temp = temp.left
                 }
             }
+            if (prev != null && begin != null && prev.value < begin!!) prev = null
             remove(current?.value)
             current = prev
             //R = O(1)
@@ -211,7 +244,7 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
      * Очень сложная
      */
     override fun subSet(fromElement: T, toElement: T): SortedSet<T> {
-        TODO()
+        return KtBinaryTree(root, fromElement, toElement)
     }
 
     /**
@@ -219,7 +252,7 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
      * Сложная
      */
     override fun headSet(toElement: T): SortedSet<T> {
-        TODO()
+        return KtBinaryTree(root, null, toElement)
     }
 
     /**
@@ -227,12 +260,13 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
      * Сложная
      */
     override fun tailSet(fromElement: T): SortedSet<T> {
-        TODO()
+        return KtBinaryTree(root, fromElement, null)
     }
 
     override fun first(): T {
         var current: Node<T> = root ?: throw NoSuchElementException()
         while (current.left != null) {
+            if (begin != null && current.left!!.value < begin!!) break
             current = current.left!!
         }
         return current.value
@@ -240,6 +274,7 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
 
     private fun firstElement(): Node<T> {
         var current: Node<T> = root ?: throw NoSuchElementException()
+        if (begin != null) return find(begin!!)!!
         while (current.left != null) {
             current = current.left!!
         }
@@ -249,8 +284,11 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
     override fun last(): T {
         var current: Node<T> = root ?: throw NoSuchElementException()
         while (current.right != null) {
+            if (end != null && current.right!!.value > end!!) break
             current = current.right!!
         }
         return current.value
     }
+
+
 }

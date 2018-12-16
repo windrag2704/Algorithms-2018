@@ -147,7 +147,6 @@ class BinaryTreeTest {
                     iterator.remove()
                 }
             }
-            println()
             assertEquals<SortedSet<*>>(treeSet, binarySet, "After removal of $toRemove from $list")
             assertEquals(treeSet.size, binarySet.size)
             for (element in list) {

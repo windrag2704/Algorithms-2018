@@ -2,6 +2,10 @@
 
 package lesson5
 
+import lesson5.impl.GraphBuilder
+import java.util.*
+import kotlin.collections.LinkedHashMap
+
 /**
  * Эйлеров цикл.
  * Средняя
@@ -29,7 +33,38 @@ package lesson5
  * связного графа ровно по одному разу
  */
 fun Graph.findEulerLoop(): List<Graph.Edge> {
-    TODO()
+    val result = mutableListOf<Graph.Edge>()
+    var n = 0
+    for (v in this.vertices) {
+        n += this.getNeighbors(v).size % 2
+    }
+    if (n != 0) return result
+    val st: Stack<Pair<Graph.Vertex, Graph.Edge>> = Stack()
+    st.push(Pair(this.edges.first().begin, this.edges.first()))
+    val passed = mutableSetOf(st.peek().second)
+    while (!st.empty()) {
+        var neigh = 0
+        var nextEdge = st.peek().second
+        var nextVertex = st.peek().first
+        when (st.peek().first) {
+            st.peek().second.begin -> nextVertex = st.peek().second.end
+            st.peek().second.end -> nextVertex = st.peek().second.begin
+        }
+        for (e in getConnections(nextVertex).values) {
+            if (!passed.contains(e)) {
+                neigh++
+                nextEdge = e
+            }
+        }
+        if (neigh == 0) {
+            result += st.pop().second
+        } else {
+            st.push(Pair(nextVertex, nextEdge))
+            passed += nextEdge
+        }
+
+    }
+    return result
 }
 
 /**
@@ -61,7 +96,28 @@ fun Graph.findEulerLoop(): List<Graph.Edge> {
  * J ------------ K
  */
 fun Graph.minimumSpanningTree(): Graph {
-    TODO()
+    val res = GraphBuilder()
+    val ids = mutableMapOf<Graph.Vertex, Int>()
+    for ((count, v) in vertices.withIndex()) {
+        ids[res.addVertex(v.name)] = count
+    }
+    for (edge in edges) {
+        val a = edge.begin
+        val b = edge.end
+        if (ids[a] != ids[b]) {
+            res.addConnection(a, b)
+            val oldId = ids[a]
+            val newId = ids[b]
+            for (v_id in ids) {
+                if (v_id.value == oldId) {
+                    v_id.setValue(newId!!)
+                }
+            }
+        }
+    }
+    return res.build()
+    //T = O(M*N) M - количество ребер, N - количество вершин
+    //R = O(N)
 }
 
 /**
