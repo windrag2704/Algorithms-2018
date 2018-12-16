@@ -4,7 +4,6 @@ package lesson5
 
 import lesson5.impl.GraphBuilder
 import java.util.*
-import kotlin.collections.LinkedHashMap
 
 /**
  * Эйлеров цикл.
@@ -65,6 +64,8 @@ fun Graph.findEulerLoop(): List<Graph.Edge> {
 
     }
     return result
+    // T = O(N*N)
+    // R = O(N)
 }
 
 /**
