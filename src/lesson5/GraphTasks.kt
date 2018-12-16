@@ -96,6 +96,7 @@ fun Graph.findEulerLoop(): List<Graph.Edge> {
  * |
  * J ------------ K
  */
+
 fun Graph.minimumSpanningTree(): Graph {
     val res = GraphBuilder()
     val ids = mutableMapOf<Graph.Vertex, Int>()
